@@ -7,3 +7,6 @@ npm-debug.log*
 .DS_Store
 
 puppeteer/.local-chromium/
+
+.wwebjs_auth/
+wwebjs_cache/
