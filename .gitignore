@@ -9,4 +9,4 @@ npm-debug.log*
 puppeteer/.local-chromium/
 
 .wwebjs_auth/
-wwebjs_cache/
+.wwebjs_cache/
