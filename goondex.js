@@ -1,7 +1,11 @@
 const { Client } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-require('dotenv').config({ path: './.env.gpt' });
-const OpenAI = require('openai');
+require('dotenv').config({ path: './.env.gemini' });
+
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 let client;
 let isUnlinked = false;
@@ -9,9 +13,9 @@ let restartAttempts = 0;
 const MAX_RESTARTS = 10;
 
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+
+
+let history = [];
 
 function startClient() {
 
@@ -53,21 +57,21 @@ function startClient() {
 
     client.on('message', async (msg) => {
         if (isUnlinked) return; // не обрабатывать, если сессия отвязана
+        if (!msg.body || msg.fromMe) return;
 
         console.log(`Сообщение от ${msg.from}: ${msg.body}`);
+        history.push({ role: 'user', parts: msg.body }); // сообщение в историю
 
         try {
-            const response = await openai.chat.comlpetions.create({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    { role: 'user', content: 'Привет!' },
-                ],
-            });
+            const result = await model.generateContent(msg.body);
+            const response = await result.response;
+            const text = response.text();
 
-            const reply = response.data.choices[0].message.content.trim();
-            await msg.reply(reply);
+            history.push({ role: 'model', parts: text });  // ответ в историю
+            await msg.reply(text);
+
         } catch (error) {
-            console.error('Error of OpenAI: ', error);
+            console.error('Error of Gemini: ', error);
             await msg.reply('Произошла ошибка при попытке ответа через... ');
         }
     });

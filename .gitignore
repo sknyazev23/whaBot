@@ -2,7 +2,8 @@ node_modules/
 
 npm-debug.log*
 
-.env
+.env.gpt
+.env.gemini
 
 .DS_Store
 
